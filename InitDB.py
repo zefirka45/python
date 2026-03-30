@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine, Column, Integer, String, MetaData, ForeignKey
-from sqlalchemy.orm import declarative_base
+from sqlalchemy.orm import declarative_base,relationship
 
 engine = create_engine('sqlite:///test.db')
 metadata = MetaData()
@@ -16,10 +16,15 @@ class User(Base):
 class Tasks(Base):
     __tablename__ = "Tasks"
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('Users.id')) 
+    applicant_id = Column(Integer, ForeignKey('Users.id')) #Заявитель
+    executor_id = Column(Integer, ForeignKey('Users.id')) #Испольнитель
     deadline = Column(String)
     theme = Column(String)
     message = Column(String)
     status = Column(String)
+
+    #Связь между классами
+    applicant = relationship("User", foreign_keys=[applicant_id])
+    executor = relationship("User", foreign_keys=[executor_id])
 
 Base.metadata.create_all(engine)

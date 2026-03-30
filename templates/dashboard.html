@@ -3,44 +3,25 @@
 <head>
     <title>Дашбоард</title>
     <style>
-        /* Общие стили */
         body { font-family: 'Segoe UI', sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; color: #333; }
-        
-        /* Навигация */
         .nav-container { background: #fff; padding: 10px 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
         .nav-container ul { list-style: none; padding: 0; margin: 0; display: flex; }
         .nav-container a { text-decoration: none; color: #007bff; font-weight: bold; padding: 10px 15px; transition: 0.3s; }
         .nav-container a:hover { background: #e9ecef; border-radius: 4px; }
-        
-        /* Основной контент */
         .content { background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); min-height: 400px; }
         h1 { margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px; color: #2c3e50; }
-
-        /* Таблицы во всю ширину */
         table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; }
         th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #ddd; }
         th { background-color: #f8f9fa; color: #666; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px; }
         tr:hover { background-color: #f1f1f1; }
-
-        /* Центрирование формы */
         .form-wrapper { display: flex; justify-content: center; padding: 20px 0; }
         .form-container { width: 100%; max-width: 550px; background: #fff; padding: 30px; border: 1px solid #eee; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        
         .form-group { margin-bottom: 20px; display: flex; flex-direction: column; }
         .form-group label { font-weight: bold; margin-bottom: 8px; color: #555; }
-        
-        .form-input { 
-            width: 100%; box-sizing: border-box; padding: 12px; border: 1px solid #ddd; 
-            border-radius: 6px; font-size: 1rem; font-family: inherit; transition: 0.3s;
-        }
-        .form-input:focus { outline: none; border-color: #007bff; box-shadow: 0 0 0 3px rgba(0,123,255,0.1); }
-        
-        /* Кнопки */
+        .form-input { width: 100%; box-sizing: border-box; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem; font-family: inherit; transition: 0.3s; }
         .btn { display: inline-block; padding: 12px 20px; border-radius: 6px; text-decoration: none; font-weight: bold; cursor: pointer; border: none; transition: 0.3s; text-align: center; }
         .btn-blue { background: #007bff; color: white; margin-bottom: 15px; }
-        .btn-blue:hover { background: #0056b3; }
         .btn-green { background: #28a745; color: white; width: 100%; font-size: 1.1rem; }
-        .btn-green:hover { background: #218838; }
         .btn-cancel { display: block; text-align: center; color: #888; margin-top: 15px; font-size: 0.9rem; }
     </style>
 </head>
@@ -56,8 +37,9 @@
 
     <div class="content">
         {# --- СТРАНИЦА ПОЛЬЗОВАТЕЛЕЙ --- #}
-        {% if request.path == url_for('dashboard_users') %}
+        {% if request.endpoint == 'dashboard_users' %}
             <h1>Управление пользователями</h1>
+            <a href="{{ url_for('dashboard_users_create') }}" class="btn btn-blue">+ Добавить пользователя</a>
             {% if user %}
                 <table>
                     <thead>
@@ -77,32 +59,60 @@
                 <p>Пользователей пока нет.</p>
             {% endif %}
 
+        {# --- СТРАНИЦА СОЗДАНИЯ ПОЛЬЗОВАТЕЛЕЙ --- #}
+        {% elif request.endpoint == 'dashboard_users_create' %}
+            <h1 style="text-align: center;">Регистрация нового пользователя</h1>
+            <div class="form-wrapper">
+                <div class="form-container">
+                    <form action="{{ url_for('dashboard_users_create') }}" method="POST">
+                        <div class="form-group">
+                            <label>Имя пользователя (Логин)</label>
+                            <input type="text" name="name" class="form-input" placeholder="Иван Иванов" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Пароль</label>
+                            <input type="password" name="password" class="form-input" placeholder="Введите сложный пароль" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Роль</label>
+                            <select name="role" class="form-input">
+                                <option value="Пользователь">Пользователь</option>
+                                <option value="Администратор">Администратор</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Статус</label>
+                            <select name="status" class="form-input">
+                                <option value="Активен">Активен</option>
+                                <option value="Заблокирован">Заблокирован</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-green">Создать пользователя</button>
+                        <a href="{{ url_for('dashboard_users') }}" class="btn-cancel">Отмена и возврат</a>
+                    </form>
+                </div>
+            </div>
+
         {# --- СТРАНИЦА СПИСКА ЗАДАЧ --- #}
-        {% elif request.path == url_for('dashboard_tasks') %}
+        {% elif request.endpoint == 'dashboard_tasks' %}
             <h1>Список задач</h1>
             <a href="{{ url_for('dashboard_tasks_create') }}" class="btn btn-blue">+ Добавить задачу</a>
-            
             {% if tasks %}
                 <table>
                     <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>Исполнитель</th>
-                            <th>Тема</th>
-                            <th>Сообщение</th>
-                            <th>Срок</th>
-                            <th>Статус</th>
+                            <th>ID</th><th>Заявитель</th><th>Исполнитель</th><th>Тема</th><th>Статус</th><th></th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for t in tasks %}
                         <tr>
                             <td>{{ t.id }}</td>
-                            <td>{{ t.user_name }}</td>
+                            <td>{{ t.applicant.name if t.applicant else "Аноним" }}</td>
+                            <td>{{ t.executor.name if t.executor else "Не назначен" }}</td>
                             <td>{{ t.theme }}</td>
-                            <td>{{ t.message }}</td>
-                            <td>{{ t.deadline }}</td>
                             <td>{{ t.status }}</td>
+                            <td><a href="{{ url_for('dashboard_tasks_detal', task_id=t.id) }}" class="btn btn-blue">Детали</a></td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -112,33 +122,48 @@
             {% endif %}
 
         {# --- СТРАНИЦА СОЗДАНИЯ ЗАДАЧИ --- #}
-        {% elif request.path == url_for('dashboard_tasks_create') %}
+        {% elif request.endpoint == 'dashboard_tasks_create' %}
             <h1 style="text-align: center;">Новая задача</h1>
             <div class="form-wrapper">
                 <div class="form-container">
                     <form action="{{ url_for('dashboard_tasks_create') }}" method="POST">
                         <div class="form-group">
                             <label>Тема задачи</label>
-                            <input type="text" name="theme" class="form-input" placeholder="Введите краткое название..." required>
+                            <input type="text" name="theme" class="form-input" required>
                         </div>
                         <div class="form-group">
-                            <label>Описание</label>
-                            <textarea name="message" class="form-input" rows="5" placeholder="Что именно нужно сделать?"></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label>Срок (дедлайн)</label>
-                            <input type="date" name="deadline" class="form-input">
+                            <label>Исполнитель</label>
+                            <select name="executor" class="form-input">
+                                <option value="" disabled selected>Выберите исполнителя</option>
+                                {% for u in user %}
+                                    <option value="{{ u.id }}">{{ u.name }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
                         <button type="submit" class="btn btn-green">Создать задачу</button>
-                        <a href="{{ url_for('dashboard_tasks') }}" class="btn-cancel">Отмена и возврат</a>
                     </form>
                 </div>
             </div>
 
+        {# --- СТРАНИЦА ПРОСМОТРА ОДНОЙ ЗАДАЧИ --- #}
+        {% elif request.endpoint == 'dashboard_tasks_detal' %}
+            {% if current_task %}
+                <h1>Задача: {{ current_task.theme }}</h1>
+                <div class="content">
+                    <p><strong>Заявитель:</strong> {{ current_task.applicant}}</p>
+                    <p><strong>Описание:</strong> {{ current_task.message }}</p>
+                    <p><strong>Статус:</strong> {{ current_task.status }}</p>
+                    <p><strong>Срок:</strong> {{ current_task.deadline }}</p>
+                    <p><strong>Комментарий</strong></p>
+                    <p><textarea placeholder="оставить коментарий"></textarea></p>
+                    <a href="{{ url_for('dashboard_tasks') }}" class="btn-cancel">Назад к списку</a>
+                </div>
+            {% endif %}
+
         {# --- ГЛАВНАЯ СТРАНИЦА --- #}
         {% else %}
             <h1>Панель управления</h1>
-            <p>Добро пожаловать в систему. Используйте верхнее меню для навигации.</p>
+            <p>Добро пожаловать в систему. Выберите раздел в меню выше.</p>
         {% endif %}
     </div>
 

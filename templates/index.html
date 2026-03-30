@@ -1,14 +1,37 @@
 <html>
-    <head>
-        <title>Привет</title>
-    </head>    
-    <body>
-        <dev>
-            <form action="/login" method="post">
-            <input placeholder="Login" name="Login" type="text">
-            <input placeholder="Password" name="Password" type="Password">
+<head>
+    <title>Авторизация</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .login-card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 300px; }
+        h2 { text-align: center; color: #2c3e50; margin-bottom: 25px; }
+        input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        input[type="submit"] { background: #007bff; color: white; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        input[type="submit"]:hover { background: #0056b3; }
+    </style>
+</head>    
+<body>
+    {% if request.path == '/' %}
+    <div class="login-card">
+        <h2>Вход в систему</h2>
+        <form action="/login" method="post">
+            <input placeholder="Логин" name="Login" type="text" required>
+            <input placeholder="Пароль" name="Password" type="password" required>
             <input type="submit" value="Войти">
-            </form>
-        </dev>
-    </body>
+            <a href="register">Регистрация</a>
+        </form>
+    </div>
+    {% elif request.path == url_for('register')%}
+    <div class="login-card">
+        <h2>Регистраия в системе</h2>
+        <form action="/register" method="post">
+            <input placeholder="Укажите логин для регистрации" name="Login" type="text" required>
+            <input placeholder="Укажите пароль для регистрации" name="Password" type="password" required>
+            <input type="submit" value="Зарегистрироваться">
+            <a href="/">Войти</a>
+        </form>
+    </div>
+    {% endif %}
+
+</body>
 </html>
