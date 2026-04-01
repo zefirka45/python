@@ -1,28 +1,37 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
+    <meta charset="UTF-8">
     <title>Дашбоард</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; color: #333; }
         .nav-container { background: #fff; padding: 10px 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        .nav-container ul { list-style: none; padding: 0; margin: 0; display: flex; }
-        .nav-container a { text-decoration: none; color: #007bff; font-weight: bold; padding: 10px 15px; transition: 0.3s; }
+        .nav-container ul { list-style: none; padding: 0; margin: 0; display: flex; gap: 15px; }
+        .nav-container a { text-decoration: none; color: #007bff; font-weight: bold; padding: 10px; transition: 0.3s; }
         .nav-container a:hover { background: #e9ecef; border-radius: 4px; }
+        
         .content { background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); min-height: 400px; }
         h1 { margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px; color: #2c3e50; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #ddd; }
-        th { background-color: #f8f9fa; color: #666; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px; }
-        tr:hover { background-color: #f1f1f1; }
+        th { background-color: #f8f9fa; color: #666; text-transform: uppercase; font-size: 0.8rem; }
+        tr:hover { background-color: #f9f9f9; }
+        
         .form-wrapper { display: flex; justify-content: center; padding: 20px 0; }
         .form-container { width: 100%; max-width: 550px; background: #fff; padding: 30px; border: 1px solid #eee; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         .form-group { margin-bottom: 20px; display: flex; flex-direction: column; }
         .form-group label { font-weight: bold; margin-bottom: 8px; color: #555; }
-        .form-input { width: 100%; box-sizing: border-box; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem; font-family: inherit; transition: 0.3s; }
-        .btn { display: inline-block; padding: 12px 20px; border-radius: 6px; text-decoration: none; font-weight: bold; cursor: pointer; border: none; transition: 0.3s; text-align: center; }
-        .btn-blue { background: #007bff; color: white; margin-bottom: 15px; }
+        
+        .form-input, .form-textarea { width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem; font-family: inherit; }
+        .form-textarea { min-height: 100px; resize: vertical; }
+        
+        .btn { display: inline-block; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: bold; cursor: pointer; border: none; transition: 0.3s; text-align: center; }
+        .btn-blue { background: #007bff; color: white; }
         .btn-green { background: #28a745; color: white; width: 100%; font-size: 1.1rem; }
-        .btn-cancel { display: block; text-align: center; color: #888; margin-top: 15px; font-size: 0.9rem; }
+        .btn-cancel { display: block; text-align: center; color: #888; margin-top: 15px; font-size: 0.9rem; text-decoration: none; }
+        
+        .status-select { padding: 5px; border-radius: 4px; border: 1px solid #ccc; font-size: 0.85rem; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -39,7 +48,7 @@
         {# --- СТРАНИЦА ПОЛЬЗОВАТЕЛЕЙ --- #}
         {% if request.endpoint == 'dashboard_users' %}
             <h1>Управление пользователями</h1>
-            <a href="{{ url_for('dashboard_users_create') }}" class="btn btn-blue">+ Добавить пользователя</a>
+            <a href="{{ url_for('dashboard_users_create') }}" class="btn btn-blue" style="margin-bottom: 20px;">+ Добавить пользователя</a>
             {% if user %}
                 <table>
                     <thead>
@@ -59,7 +68,7 @@
                 <p>Пользователей пока нет.</p>
             {% endif %}
 
-        {# --- СТРАНИЦА СОЗДАНИЯ ПОЛЬЗОВАТЕЛЕЙ --- #}
+        {# --- СОЗДАНИЕ ПОЛЬЗОВАТЕЛЯ --- #}
         {% elif request.endpoint == 'dashboard_users_create' %}
             <h1 style="text-align: center;">Регистрация нового пользователя</h1>
             <div class="form-wrapper">
@@ -67,11 +76,11 @@
                     <form action="{{ url_for('dashboard_users_create') }}" method="POST">
                         <div class="form-group">
                             <label>Имя пользователя (Логин)</label>
-                            <input type="text" name="name" class="form-input" placeholder="Иван Иванов" required>
+                            <input type="text" name="name" class="form-input" required>
                         </div>
                         <div class="form-group">
                             <label>Пароль</label>
-                            <input type="password" name="password" class="form-input" placeholder="Введите сложный пароль" required>
+                            <input type="password" name="password" class="form-input" required>
                         </div>
                         <div class="form-group">
                             <label>Роль</label>
@@ -80,39 +89,41 @@
                                 <option value="Администратор">Администратор</option>
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label>Статус</label>
-                            <select name="status" class="form-input">
-                                <option value="Активен">Активен</option>
-                                <option value="Заблокирован">Заблокирован</option>
-                            </select>
-                        </div>
                         <button type="submit" class="btn btn-green">Создать пользователя</button>
-                        <a href="{{ url_for('dashboard_users') }}" class="btn-cancel">Отмена и возврат</a>
+                        <a href="{{ url_for('dashboard_users') }}" class="btn-cancel">Отмена</a>
                     </form>
                 </div>
             </div>
 
-        {# --- СТРАНИЦА СПИСКА ЗАДАЧ --- #}
+        {# --- СПИСОК ЗАДАЧ --- #}
         {% elif request.endpoint == 'dashboard_tasks' %}
             <h1>Список задач</h1>
-            <a href="{{ url_for('dashboard_tasks_create') }}" class="btn btn-blue">+ Добавить задачу</a>
+            <a href="{{ url_for('dashboard_tasks_create') }}" class="btn btn-blue" style="margin-bottom: 20px;">+ Добавить задачу</a>
             {% if tasks %}
                 <table>
                     <thead>
                         <tr>
-                            <th>ID</th><th>Заявитель</th><th>Исполнитель</th><th>Тема</th><th>Статус</th><th></th>
+                            <th>ID</th><th>Заявитель</th><th>Исполнитель</th><th style="width: 180px;">Статус</th><th>Тема</th><th>Сообщение</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for t in tasks %}
                         <tr>
-                            <td>{{ t.id }}</td>
+                            <td>#{{ t.id }}</td>
                             <td>{{ t.applicant.name if t.applicant else "Аноним" }}</td>
                             <td>{{ t.executor.name if t.executor else "Не назначен" }}</td>
+                            <td>
+                                <form action="{{ url_for('dashboard_tasks_detal', task_id=t.id) }}" method="POST">
+                                    <select name="status" class="status-select" onchange="this.form.submit()">
+                                        <option value="Распределение" {% if t.status == 'Распределение' %}selected{% endif %}>📃 Распределение</option>
+                                        <option value="В работе" {% if t.status == 'В работе' %}selected{% endif %}>⏳ В работе</option>
+                                        <option value="Выполнено" {% if t.status == 'Выполнено' %}selected{% endif %}>✅ Выполнено</option>
+                                        <option value="Отменено" {% if t.status == 'Отменено' %}selected{% endif %}>❌ Отменено</option>
+                                    </select>
+                                </form>
+                            </td>
                             <td>{{ t.theme }}</td>
-                            <td>{{ t.status }}</td>
-                            <td><a href="{{ url_for('dashboard_tasks_detal', task_id=t.id) }}" class="btn btn-blue">Детали</a></td>
+                            <td>{{ t.message }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -121,7 +132,7 @@
                 <p>Задач пока нет.</p>
             {% endif %}
 
-        {# --- СТРАНИЦА СОЗДАНИЯ ЗАДАЧИ --- #}
+        {# --- СОЗДАНИЕ ЗАДАЧИ --- #}
         {% elif request.endpoint == 'dashboard_tasks_create' %}
             <h1 style="text-align: center;">Новая задача</h1>
             <div class="form-wrapper">
@@ -140,30 +151,27 @@
                                 {% endfor %}
                             </select>
                         </div>
+                        <div class="form-group">
+                            <label>Срок</label>
+                            <input type="date" name="deadline" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label>Сообщение</label>
+                            <textarea name="message" class="form-textarea"></textarea>
+                        </div>
                         <button type="submit" class="btn btn-green">Создать задачу</button>
+                        <a href="{{ url_for('dashboard_tasks') }}" class="btn-cancel">Отмена</a>
                     </form>
                 </div>
             </div>
 
-        {# --- СТРАНИЦА ПРОСМОТРА ОДНОЙ ЗАДАЧИ --- #}
-        {% elif request.endpoint == 'dashboard_tasks_detal' %}
-            {% if current_task %}
-                <h1>Задача: {{ current_task.theme }}</h1>
-                <div class="content">
-                    <p><strong>Заявитель:</strong> {{ current_task.applicant}}</p>
-                    <p><strong>Описание:</strong> {{ current_task.message }}</p>
-                    <p><strong>Статус:</strong> {{ current_task.status }}</p>
-                    <p><strong>Срок:</strong> {{ current_task.deadline }}</p>
-                    <p><strong>Комментарий</strong></p>
-                    <p><textarea placeholder="оставить коментарий"></textarea></p>
-                    <a href="{{ url_for('dashboard_tasks') }}" class="btn-cancel">Назад к списку</a>
-                </div>
-            {% endif %}
+        
 
-        {# --- ГЛАВНАЯ СТРАНИЦА --- #}
+
+        {# --- ГЛАВНАЯ / АРХИВ --- #}
         {% else %}
-            <h1>Панель управления</h1>
-            <p>Добро пожаловать в систему. Выберите раздел в меню выше.</p>
+            <h1>Добро пожаловать в Дашбоард</h1>
+            <p>Выберите раздел в меню выше для начала работы.</p>
         {% endif %}
     </div>
 
