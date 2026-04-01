@@ -96,7 +96,7 @@
             {% if tasks %}
                 <table>
                     <thead>
-                        <tr><th style="width: 50px;">ID</th><th>Заявитель</th><th>Исполнитель</th><th style="width: 150px;">Статус</th><th>Тема</th><th>Сообщение</th></tr>
+                        <tr><th style="width: 50px;">ID</th><th>Заявитель</th><th>Исполнитель</th><th>Срок</th><th style="width: 150px;">Статус</th><th>Тема</th><th>Сообщение</th></tr>
                     </thead>
                     <tbody>
                         {% for t in tasks %}
@@ -105,6 +105,7 @@
                                 <td>#{{ t.id }}</td>
                                 <td>{{ t.applicant.name if t.applicant else "Аноним" }}</td>
                                 <td>{{ t.executor.name if t.executor else "Не назначен" }}</td>
+                                <td>{{ t.deadline }}</td>
                                 <td>
                                     <form action="{{ url_for('dashboard_tasks_detal', task_id=t.id) }}" method="POST">
                                         <select name="status" class="status-select" onchange="this.form.submit()">
@@ -139,12 +140,25 @@
             <h1>Новая задача</h1>
             <div class="form-wrapper"><div class="form-container">
                 <form action="{{ url_for('dashboard_tasks_create') }}" method="POST">
+                    
                     <div class="form-group"><label>Тема</label><input type="text" name="subject" class="form-input" required></div>
+                    <div class="form-group">
+                        <label>Исполнитель</label>
+                        <select name="executor" class="form-input">
+                            <option value="">-- Выберите исполнителя --</option>
+                            {% for u in user %}
+                                {# Предполагаем, что у пользователя есть id и name #}
+                                <option value="{{ u.id }}">{{ u.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group"><label>Срок</label><input class="form-input" type="date" name="deadline" required></div>
                     <div class="form-group"><label>Описание</label><textarea name="message" class="form-textarea"></textarea></div>
                     <button type="submit" class="btn btn-green">Создать</button>
                     <a href="{{ url_for('dashboard_tasks') }}" class="btn-cancel">Отмена</a>
+                    
                 </form>
-            </div></div>
+            </div>
 
         {# --- АРХИВ (ТОЛЬКО ЗАКРЫТЫЕ) --- #}
         {% elif request.endpoint == 'dashboard_archive' %}
