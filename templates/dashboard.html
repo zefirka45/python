@@ -13,25 +13,34 @@
         .content { background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); min-height: 400px; }
         h1 { margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px; color: #2c3e50; }
         
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #ddd; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; table-layout: fixed; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #ddd; overflow: hidden; text-overflow: ellipsis; }
         th { background-color: #f8f9fa; color: #666; text-transform: uppercase; font-size: 0.8rem; }
         tr:hover { background-color: #f9f9f9; }
         
+        /* Цвета для статусов в архиве */
+        .status-done { color: #28a745; font-weight: bold; }
+        .status-cancel { color: #dc3545; font-weight: bold; }
+
+        /* Модальное окно */
+        dialog { border: none; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); padding: 25px; width: 90%; max-width: 500px; }
+        dialog::backdrop { background: rgba(0, 0, 0, 0.5); }
+        .close-modal { float: right; cursor: pointer; border: none; background: none; font-size: 1.5rem; color: #888; }
+        .view-btn { color: #007bff; text-decoration: underline; cursor: pointer; background: none; border: none; padding: 0; font-size: 0.85rem; text-align: left; }
+
+        /* Формы */
         .form-wrapper { display: flex; justify-content: center; padding: 20px 0; }
         .form-container { width: 100%; max-width: 550px; background: #fff; padding: 30px; border: 1px solid #eee; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         .form-group { margin-bottom: 20px; display: flex; flex-direction: column; }
         .form-group label { font-weight: bold; margin-bottom: 8px; color: #555; }
-        
-        .form-input, .form-textarea { width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem; font-family: inherit; }
+        .form-input, .form-textarea { width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem; }
         .form-textarea { min-height: 100px; resize: vertical; }
         
         .btn { display: inline-block; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: bold; cursor: pointer; border: none; transition: 0.3s; text-align: center; }
         .btn-blue { background: #007bff; color: white; }
         .btn-green { background: #28a745; color: white; width: 100%; font-size: 1.1rem; }
-        .btn-cancel { display: block; text-align: center; color: #888; margin-top: 15px; font-size: 0.9rem; text-decoration: none; }
-        
-        .status-select { padding: 5px; border-radius: 4px; border: 1px solid #ccc; font-size: 0.85rem; cursor: pointer; }
+        .btn-cancel { display: block; text-align: center; color: #888; margin-top: 15px; text-decoration: none; }
+        .status-select { padding: 5px; border-radius: 4px; border: 1px solid #ccc; font-size: 0.85rem; width: 100%; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -45,7 +54,7 @@
     </div>
 
     <div class="content">
-        {# --- СТРАНИЦА ПОЛЬЗОВАТЕЛЕЙ --- #}
+        {# --- СПИСОК ПОЛЬЗОВАТЕЛЕЙ --- #}
         {% if request.endpoint == 'dashboard_users' %}
             <h1>Управление пользователями</h1>
             <a href="{{ url_for('dashboard_users_create') }}" class="btn btn-blue" style="margin-bottom: 20px;">+ Добавить пользователя</a>
@@ -56,124 +65,125 @@
                     </thead>
                     <tbody>
                         {% for u in user %}
-                        <tr>
-                            <td>{{ u.name }}</td>
-                            <td>{{ u.status }}</td>
-                            <td>{{ u.role }}</td>
-                        </tr>
+                        <tr><td>{{ u.name }}</td><td>{{ u.status }}</td><td>{{ u.role }}</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>
-            {% else %}
-                <p>Пользователей пока нет.</p>
             {% endif %}
 
         {# --- СОЗДАНИЕ ПОЛЬЗОВАТЕЛЯ --- #}
         {% elif request.endpoint == 'dashboard_users_create' %}
-            <h1 style="text-align: center;">Регистрация нового пользователя</h1>
-            <div class="form-wrapper">
-                <div class="form-container">
-                    <form action="{{ url_for('dashboard_users_create') }}" method="POST">
-                        <div class="form-group">
-                            <label>Имя пользователя (Логин)</label>
-                            <input type="text" name="name" class="form-input" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Пароль</label>
-                            <input type="password" name="password" class="form-input" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Роль</label>
-                            <select name="role" class="form-input">
-                                <option value="Пользователь">Пользователь</option>
-                                <option value="Администратор">Администратор</option>
-                            </select>
-                        </div>
-                        <button type="submit" class="btn btn-green">Создать пользователя</button>
-                        <a href="{{ url_for('dashboard_users') }}" class="btn-cancel">Отмена</a>
-                    </form>
-                </div>
-            </div>
+            <h1 style="text-align: center;">Новый пользователь</h1>
+            <div class="form-wrapper"><div class="form-container">
+                <form action="{{ url_for('dashboard_users_create') }}" method="POST">
+                    <div class="form-group"><label>Логин</label><input type="text" name="name" class="form-input" required></div>
+                    <div class="form-group"><label>Пароль</label><input type="password" name="password" class="form-input" required></div>
+                    <div class="form-group"><label>Роль</label>
+                        <select name="role" class="form-input">
+                            <option value="Пользователь">Пользователь</option>
+                            <option value="Администратор">Администратор</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-green">Создать</button>
+                    <a href="{{ url_for('dashboard_users') }}" class="btn-cancel">Отмена</a>
+                </form>
+            </div></div>
 
-        {# --- СПИСОК ЗАДАЧ --- #}
+        {# --- ТЕКУЩИЕ ЗАДАЧИ (НЕ ЗАКРЫТЫЕ) --- #}
         {% elif request.endpoint == 'dashboard_tasks' %}
-            <h1>Список задач</h1>
+            <h1>Список активных задач</h1>
             <a href="{{ url_for('dashboard_tasks_create') }}" class="btn btn-blue" style="margin-bottom: 20px;">+ Добавить задачу</a>
             {% if tasks %}
                 <table>
                     <thead>
-                        <tr>
-                            <th>ID</th><th>Заявитель</th><th>Исполнитель</th><th style="width: 180px;">Статус</th><th>Тема</th><th>Сообщение</th>
-                        </tr>
+                        <tr><th style="width: 50px;">ID</th><th>Заявитель</th><th>Исполнитель</th><th style="width: 150px;">Статус</th><th>Тема</th><th>Сообщение</th></tr>
                     </thead>
                     <tbody>
                         {% for t in tasks %}
-                        <tr>
-                            <td>#{{ t.id }}</td>
-                            <td>{{ t.applicant.name if t.applicant else "Аноним" }}</td>
-                            <td>{{ t.executor.name if t.executor else "Не назначен" }}</td>
-                            <td>
-                                <form action="{{ url_for('dashboard_tasks_detal', task_id=t.id) }}" method="POST">
-                                    <select name="status" class="status-select" onchange="this.form.submit()">
-                                        <option value="Распределение" {% if t.status == 'Распределение' %}selected{% endif %}>📃 Распределение</option>
-                                        <option value="В работе" {% if t.status == 'В работе' %}selected{% endif %}>⏳ В работе</option>
-                                        <option value="Выполнено" {% if t.status == 'Выполнено' %}selected{% endif %}>✅ Выполнено</option>
-                                        <option value="Отменено" {% if t.status == 'Отменено' %}selected{% endif %}>❌ Отменено</option>
-                                    </select>
-                                </form>
-                            </td>
-                            <td>{{ t.theme }}</td>
-                            <td>{{ t.message }}</td>
-                        </tr>
+                            {% if t.status not in ['Выполнено', 'Отменено'] %}
+                            <tr>
+                                <td>#{{ t.id }}</td>
+                                <td>{{ t.applicant.name if t.applicant else "Аноним" }}</td>
+                                <td>{{ t.executor.name if t.executor else "Не назначен" }}</td>
+                                <td>
+                                    <form action="{{ url_for('dashboard_tasks_detal', task_id=t.id) }}" method="POST">
+                                        <select name="status" class="status-select" onchange="this.form.submit()">
+                                            <option value="Распределение" {% if t.status == 'Распределение' %}selected{% endif %}>📃 Распределение</option>
+                                            <option value="В работе" {% if t.status == 'В работе' %}selected{% endif %}>⏳ В работе</option>
+                                            <option value="Выполнено" {% if t.status == 'Выполнено' %}selected{% endif %}>✅ Выполнено</option> 
+                                            <option value="Отменено" {% if t.status == 'Отменено' %}selected{% endif %}>❌ Отменено</option>
+                                        </select>
+                                    </form>
+                                </td>
+                                <td>{{ t.subject or 'Без темы' }}</td>
+                                <td>
+                                    {% set msg = t.message or "" %}
+                                    {% if msg | length > 40 %}
+                                        <button class="view-btn" onclick="document.getElementById('modal-{{ t.id }}').showModal()">Открыть...</button>
+                                        <dialog id="modal-{{ t.id }}">
+                                            <button class="close-modal" onclick="this.closest('dialog').close()">×</button>
+                                            <h3>Детали задачи #{{ t.id }}</h3>
+                                            <div style="white-space: pre-wrap; margin-top: 15px;">{{ msg }}</div>
+                                        </dialog>
+                                    {% else %}{{ msg }}{% endif %}
+                                </td>
+                            </tr>
+                            {% endif %}
                         {% endfor %}
                     </tbody>
                 </table>
-            {% else %}
-                <p>Задач пока нет.</p>
-            {% endif %}
+            {% else %}<p>Задач нет.</p>{% endif %}
 
         {# --- СОЗДАНИЕ ЗАДАЧИ --- #}
         {% elif request.endpoint == 'dashboard_tasks_create' %}
-            <h1 style="text-align: center;">Новая задача</h1>
-            <div class="form-wrapper">
-                <div class="form-container">
-                    <form action="{{ url_for('dashboard_tasks_create') }}" method="POST">
-                        <div class="form-group">
-                            <label>Тема задачи</label>
-                            <input type="text" name="theme" class="form-input" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Исполнитель</label>
-                            <select name="executor" class="form-input">
-                                <option value="" disabled selected>Выберите исполнителя</option>
-                                {% for u in user %}
-                                    <option value="{{ u.id }}">{{ u.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Срок</label>
-                            <input type="date" name="deadline" class="form-input">
-                        </div>
-                        <div class="form-group">
-                            <label>Сообщение</label>
-                            <textarea name="message" class="form-textarea"></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-green">Создать задачу</button>
-                        <a href="{{ url_for('dashboard_tasks') }}" class="btn-cancel">Отмена</a>
-                    </form>
-                </div>
-            </div>
+            <h1>Новая задача</h1>
+            <div class="form-wrapper"><div class="form-container">
+                <form action="{{ url_for('dashboard_tasks_create') }}" method="POST">
+                    <div class="form-group"><label>Тема</label><input type="text" name="subject" class="form-input" required></div>
+                    <div class="form-group"><label>Описание</label><textarea name="message" class="form-textarea"></textarea></div>
+                    <button type="submit" class="btn btn-green">Создать</button>
+                    <a href="{{ url_for('dashboard_tasks') }}" class="btn-cancel">Отмена</a>
+                </form>
+            </div></div>
 
-        
-
-
-        {# --- ГЛАВНАЯ / АРХИВ --- #}
-        {% else %}
-            <h1>Добро пожаловать в Дашбоард</h1>
-            <p>Выберите раздел в меню выше для начала работы.</p>
+        {# --- АРХИВ (ТОЛЬКО ЗАКРЫТЫЕ) --- #}
+        {% elif request.endpoint == 'dashboard_archive' %}
+            <h1>Архив задач</h1>
+            {% if tasks %}
+                <table>
+                    <thead>
+                        <tr><th style="width: 50px;">ID</th><th>Исполнитель</th><th>Статус</th><th>Тема</th><th>Сообщение</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for t in tasks %}
+                            {% if t.status in ['Выполнено', 'Отменено'] %}
+                            <tr>
+                                <td>#{{ t.id }}</td>
+                                <td>{{ t.executor.name if t.executor else "-" }}</td>
+                                <td class="{{ 'status-done' if t.status == 'Выполнено' else 'status-cancel' }}">{{ t.status }}</td>
+                                <td>{{ t.subject or 'Без темы' }}</td>
+                                <td>
+                                    {% set msg = t.message or "" %}
+                                    {% if msg | length > 20 %}
+                                        <button class="view-btn" onclick="document.getElementById('archive-{{ t.id }}').showModal()">Открыть</button>
+                                        <dialog id="archive-{{ t.id }}">
+                                            <button class="close-modal" onclick="this.closest('dialog').close()">×</button>
+                                            <h3>Архивная задача #{{ t.id }}</h3>
+                                            <div style="white-space: pre-wrap; margin-top: 15px;">{{ msg }}</div>
+                                        </dialog>
+                                    {% else %}{{ msg }}{% endif %}
+                                </td>
+                            </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}<p>Архив пуст.</p>{% endif %}
         {% endif %}
     </div>
 
+    <script>
+        document.querySelectorAll('dialog').forEach(d => d.addEventListener('click', e => { if (e.target === d) d.close(); }));
+    </script>
 </body>
 </html>

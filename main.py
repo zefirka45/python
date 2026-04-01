@@ -96,10 +96,11 @@ def dashboard_tasks_detal(task_id):
         return redirect(request.referrer or url_for('dashboard_tasks'))
     
     return render_template('dashboard.html', menu=menu, current_task=task)
-
+# Архив
 @app.route('/dashboard_archive')
 def dashboard_archive():
-    return render_template('dashboard.html', menu=menu)
+    all_tasks = db_session.query(Tasks).all()
+    return render_template('dashboard.html', menu=menu,tasks=all_tasks)
 
 if __name__ == "__main__":
     app.run(debug=True)
